@@ -1,0 +1,34 @@
+1. Ref: https://irobotics.illinois.edu/wiki/PID
+(include Example codes for C++ with integration clamping)
+
+// initialize variables
+prevTime = getTime();
+prevError = 0;
+integral = 0;
+kP = ...;
+kI = ...;
+kD = ...;
+
+while(true){
+	// get the time since the last iteration
+	currentTime = getTime();
+	dt = currentTime - prevTime;
+
+	// calculate the PID terms
+	error = target - currentValue;
+	integral = integral + error*dt;
+	derivative = (error - prevError)/dt;
+
+	// calculate output
+	output = kP*error + kI*integral + kD*derivative;
+
+	// wait for next iteration
+	prevTime = currentTime;
+	prevError = error;
+	wait();
+}
+
+2. kP, kI, kD Tuning Suggestions: http://robotsforroboticists.com/pid-control/
+(start with Ziegler–Nichols method before manual tuning)
++ will need to graph the input/output for easier tuning 
+and to find osicllation period P_U for Ziegler-Nichols method
