@@ -31,9 +31,11 @@
         - **Integral Term (`Ki`)**: lets the controller handle errors that are accumulating over time.The problem is that if you have a large `Ki` you are trying to correct error over time so it can interfere with your response for dealing with current changes. This term is often the cause of instability in your PID controller.
         - **Derivative Term (`Kd`)**: looking at how your system is behaving between time intervals. This helps dampen your system to improve stability.
     - Manual Tuning:  first set `Ki` and `Kd` values to zero. Increase the `Kp` until the output of the loop oscillates (or just performs well), then the `Kp` should be set to approximately half of that value for a “quarter amplitude decay” type response. Then increase `Ki` until any offset is corrected in sufficient time for the process. However, too much `Ki` will cause instability. Finally, increase `Kd`, if required, until the overshooting is minimized. However, too much `Kd` will cause slow responses and sluggishness. A fast PID loop tuning usually overshoots slightly to reach the setpoint more quickly; however, some systems cannot accept overshoot, in which case an over-damped closed-loop system is required, which will require a `Kp` setting significantly less than half that of the KP setting that was causing oscillation.
+    - 
     ![](https://i.imgur.com/oPkPzJX.png)
 
     - Ziegler–Nichols: set `Kp` first like above
+    - 
     ![](https://i.imgur.com/qiPydMp.png)
 
 
@@ -43,4 +45,4 @@
 - Integrate into ROS nodes to run with hardware ([Ref](https://github.com/heyuhang0/SAUVC2019-ROS/blob/master/bubbles_pid/launch/bubbles_pid.launch))
 -> Bryan, ZY and Blong
 - Tune
--> Zhi Yan, Kush and Blong
+-> Zhi Yan, Kush, ZY and Blong
