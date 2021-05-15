@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>bubbles_hardware</name>
+  <name>merlion_hardware</name>
   <version>0.0.0</version>
-  <description>The bubbles_hardware package</description>
+  <description>The merlion_hardware package</description>
 
-  <maintainer email="heyuhang0@outlook.com">heyuhang0</maintainer>
+  <maintainer email="long_tran@mymail.sutd.edu.sg">BlongTran</maintainer>
 
   <license>TODO</license>
 
