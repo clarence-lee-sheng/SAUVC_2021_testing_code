@@ -1,0 +1,19 @@
+<launch>
+  <arg name="ns" default="merlion_hardware"/>
+  <arg name="mcu_port" default="/dev/ttyUSB_MCU"/>
+  <arg name="imu_port" default="/dev/ttyUSB_IMU"/>
+
+  <include file="$(find merlion_hardware)/launch/mcu.launch">
+    <arg name="ns" value="$(arg ns)"/>
+    <arg name="mcu_port" value="$(arg mcu_port)"/>
+  </include>
+
+  <include file="$(find merlion_hardware)/launch/cameras.launch">
+    <arg name="ns" value="$(arg ns)"/>
+  </include>
+
+  <include file="$(find merlion_hardware)/launch/imu.launch">
+    <arg name="ns" value="$(arg ns)"/>
+    <arg name="port" value="$(arg imu_port)"/>
+  </include>
+</launch>

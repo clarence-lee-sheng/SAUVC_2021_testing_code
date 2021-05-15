@@ -1,0 +1,6 @@
+<launch>
+  <include file="$(find merlion_pid)/launch/pid_publisher.launch" />
+  <include file="$(find merlion_state)/launch/state_publisher.launch" />
+  <include file="$(find merlion_cv)/launch/all_trackers.launch" />
+  <include file="$(find merlion_hardware)/launch/all_hardware.launch" />
+</launch>

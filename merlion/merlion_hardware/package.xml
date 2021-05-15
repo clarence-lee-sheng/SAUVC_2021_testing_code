@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>bubbles_hardware</name>
+  <version>0.0.0</version>
+  <description>The bubbles_hardware package</description>
+
+  <maintainer email="heyuhang0@outlook.com">heyuhang0</maintainer>
+
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
+
+</package>
