@@ -3,6 +3,7 @@ import rospy
 import smach
 import time
 from std_msgs.msg import Float64
+from std_msgs.msg import String
 from vision_msgs.msg import BoundingBox2D
 
 
@@ -12,6 +13,7 @@ class Input:
         self.initial_yaw = 0
         self.gate_pos = BoundingBox2D()
         self.flare_pos = BoundingBox2D()
+        self.flare_color = "Red"
 
 
 class Output:
@@ -75,6 +77,7 @@ class BaseStrategy:
         rospy.Subscriber('/merlion_state/yaw', Float64, self._on_yaw_update)
         rospy.Subscriber('/merlion_cv/gate/pos', BoundingBox2D, self._on_gate_pos_update)
         rospy.Subscriber('/merlion_cv/flare/pos', BoundingBox2D, self._on_flare_pos_update)
+        rospy.Subscriber('/merlion_cv/flare/color', String,  self._on_flare_color_update)
 
         self._time_last_publish = 0
 
@@ -89,6 +92,9 @@ class BaseStrategy:
 
     def _on_flare_pos_update(self, msg):
         self.input.flare_pos = msg
+
+    def _on_flare_color_update(self, msg):
+        self.input.flare_color = msg
 
     def _on_output_update(self):
         if time.time() - self._time_last_publish > 0.01:

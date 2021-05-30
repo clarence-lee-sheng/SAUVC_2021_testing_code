@@ -6,6 +6,16 @@ import numpy as np
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 from vision_msgs.msg import BoundingBox2D
+from std_msgs.msg import String
+
+
+class Color:
+    def __init__(self, bgr):
+        self.b, self.g, self.r = bgr
+
+    def compute_distance_from(self, other_color):
+        distance = math.sqrt((self.b - other_color.b) ** 2 + (self.g - other_color.g) ** 2 + (self.r - other_color.r) ** 2)
+        return distance
 
 
 class TwoPointLine:
@@ -48,6 +58,7 @@ class FlareTracker:
         self.bridge = CvBridge()
 
         self.result_pub = rospy.Publisher('pos', BoundingBox2D, queue_size=10)
+        self.color_pub = rospy.Publisher('color', String, queue_size=10)             #
         self.debug_pubs = []
         self.image_sub = rospy.Subscriber('image', Image, self.on_new_frame)
 
@@ -64,6 +75,15 @@ class FlareTracker:
         boundingBox.size_y = result_raw[2]
 
         self.result_pub.publish(boundingBox)
+
+        pixel_color = Color(frame[boundingBox.center.y, boundingBox.center.x])
+        red = Color([0, 0, 255])
+        yellow = Color([0, 255, 255])
+
+        if pixel_color.compute_distance_from(red) < pixel_color.compute_distance_from(yellow):
+            self.color_pub.publish("Red")
+        else:
+            self.color_pub.publish("Yellow")
 
         debug_frames = result_raw[3]
         while len(self.debug_pubs) < len(debug_frames):
