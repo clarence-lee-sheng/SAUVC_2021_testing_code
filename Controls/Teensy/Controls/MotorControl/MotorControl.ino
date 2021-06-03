@@ -1,3 +1,6 @@
+#include <ros.h>
+#include <std_msgs/String.h>
+#include <std_msgs/UInt16.h>
 #include <Servo.h>
 
 #define MOTORSIZE 5 // Change this if this physical motor count increases
@@ -15,6 +18,19 @@ struct Motor
    Servo esc; 
 };
 
+
+///Function declaration
+void subscriberCallBack(const std_msgs::UInt16& sub_msg );
+
+//ROS declarations 
+ros::NodeHandle node_handle; //rosserial object 
+
+std_msgs::String sub_msg; // ros message
+std_msgs::UInt16 motorState_msg; // motorState string publisher message
+
+ros::Publisher motorState_Publisher("motor_state",&motorState_msg);
+ros::Subscriber<std_msgs::UInt16> motor_Subscriber("motor_command", &subscriberCallBack);
+
 Motor motors[MOTORSIZE];
 int motorPins [MOTORSIZE] = {M1_PIN,M2_PIN,M3_PIN,M4_PIN,M5_PIN};
 int armingFreq[MOTORSIZE] = {1480,1480,1480,1480,1480};
@@ -25,12 +41,19 @@ void setup()
 {
   Serial.begin(9600);
   armAll();
+  //TODO: find a way to cut off comms when mother controller is not connected
+  rosInit();
 }
 
 void loop() 
 {
-  //test();
-  testSingle(motors[1]);
+ //TODO:Update Motor state here
+
+ //TODO:Update Pressure state here
+ 
+  motorState_Publisher.publish(&motorState_msg);
+  node_handle.spinOnce();
+  delay(100);
 }
 
 //============================INIT CODE ==================================
@@ -63,7 +86,20 @@ void serialEvent()
   Serial.print("ReadValue : ");Serial.println(readValue);
   Serial.print("ActualValue : ");Serial.println(value);
 }
+void rosInit()
+{
+  node_handle.initNode();
+  node_handle.advertise(motorState_Publisher);
+  node_handle.subscribe(motor_Subscriber);
+}
+///============================ROS CALLBACK CODE ===================================
 //TODO : Add ROSSERIAL CODE HERE
+void subscriberCallBack(const std_msgs::UInt16& sub_msg )
+{
+  /// Callback function for motor / pressure sensore return 
+  //TODO: code events for commands
+}
+
 
 ///============================MOTOR CONTROL CODE ==================================
 void motorSetSpeedAllPercentage(int _speedPercentage [])
