@@ -1,0 +1,75 @@
+ // https://github.com/sparkfun/MS5803-14BA_Breakout/
+ 
+GND pin on pressure sensor is coonected to GND on arduino
+3.3V pin on pressure sensor is connected to 3.3V on arduino
+SDA/SDI pin on pressure sensor is connected to A4 on arduino
+SCL/SCLK pin on pressure sensor is connected to A5 on arduino
+ 
+#include <Wire.h>
+#include <SparkFun_MS5803_I2C.h> // Click here to get the library: http://librarymanager/All#SparkFun_MS5803-14BA
+
+MS5803 sensor(ADDRESS_HIGH);
+
+//Create variables to store results
+double pressure_abs, pressure_relative, altitude_delta, pressure_baseline;
+
+
+void setup() {
+  Wire.begin();
+  //Initialize Serial Monitor
+  Serial.begin(9600);
+  //Retrieve calibration constants for conversion math.
+  sensor.reset();
+  sensor.begin();
+
+  pressure_baseline = sensor.getPressure(ADC_4096);
+
+}
+
+void loop() {
+
+  // To measure to higher degrees of precision use the following sensor settings:
+  // ADC_256
+  // ADC_512
+  // ADC_1024
+  // ADC_2048
+  // ADC_4096
+
+  // Read temperature from the sensor in deg C. This operation takes about
+  temperature_c = sensor.getTemperature(CELSIUS, ADC_512);
+
+
+  // Read pressure from the sensor in mbar.
+  pressure_abs = sensor.getPressure(ADC_4096);
+
+
+  // Taking our baseline pressure at the beginning we can find an approximate
+  // change in altitude based on the differences in pressure.
+  altitude_delta = altitude(pressure_abs , pressure_baseline);
+
+  // Report values via UART
+ 
+  Serial.print("Pressure abs (mbar)= ");
+  Serial.println(pressure_abs);
+
+
+  Serial.println(" ");//padding between outputs
+
+  delay(1000);
+
+}
+
+double sealevel(double P, double A)
+// Given a pressure P (mbar) taken at a specific altitude (meters),
+// return the equivalent pressure (mbar) at sea level.
+{
+  return (P / pow(1 - (A / 44330.0), 5.255));
+}
+
+
+double altitude(double P, double P0)
+// Given a pressure measurement P (mbar) and the pressure at a baseline P0 (mbar),
+// return altitude (meters) above baseline.
+{
+  return (44330.0 * (1 - pow(P / P0, 1 / 5.255)));
+}
