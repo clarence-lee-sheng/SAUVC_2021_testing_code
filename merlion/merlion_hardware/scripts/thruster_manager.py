@@ -4,8 +4,9 @@ import numpy as np
 from typing import Sequence
 
 import rospy
-from geometry_msgs.msg import Twist
-# import ThrusterValues msg 
+from geometry_msgs.msg import motor 
+from std_msgs import Twist 
+from merlion_hardware.msg import Motor 
 
 class ThrusterManagerNode:
     def __init__(self):
@@ -24,7 +25,7 @@ class ThrusterManagerNode:
         self.num_thrusters = len(self.tranform_matrix)
 
         rospy.Subscriber(self.node_name + '/input', Twist, self.input_callback)
-        self.thruster_pub = rospy.Publisher('thruster_values', ThrusterValues, queue_size=10)
+        self.thruster_pub = rospy.Publisher('thruster_values', Motor, queue_size=10)
 
         rospy.loginfo("ThrusterManagerNode started")
 
@@ -35,15 +36,13 @@ class ThrusterManagerNode:
         ])
         output = self.scale * self.tranform_matrix @ control_vector
         self.update_thrusters(output)
-        msg = ThrusterValues() 
+        msg = Motor()
         msg.m1 = output[0]
         msg.m2 = output[1]
         msg.m3 = output[2]
         msg.m4 = output[3]
         msg.m5 = output[4]
         self.thruster_pub.publish(msg)
-
-
 
 if __name__ == '__main__':
     ThrusterManagerNode()

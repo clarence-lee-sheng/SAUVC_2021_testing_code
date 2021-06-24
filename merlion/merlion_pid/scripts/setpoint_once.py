@@ -8,10 +8,10 @@ if __name__ == "__main__":
     time = 0
     rate = rospy.Rate(10)
     while not rospy.is_shutdown():
-        rospy.Publisher('yaw/setpoint', Float64, queue_size=10).publish(Float64(0))
+        # rospy.Publisher('yaw/setpoint', Float64, queue_size=10).publish(Float64(0))
         rospy.Publisher('pitch/setpoint', Float64, queue_size=10).publish(Float64(0))
-        rospy.Publisher('roll/setpoint',  Float64, queue_size=10).publish(Float64(0))
-        rospy.Publisher('depth/setpoint', Float64, queue_size=10).publish(Float64(0.2))
+        # rospy.Publisher('roll/setpoint',  Float64, queue_size=10).publish(Float64(0))
+        # rospy.Publisher('depth/setpoint', Float64, queue_size=10).publish(Float64(0.2))
         rospy.Publisher('speed/setpoint', Float64, queue_size=10).publish(Float64(0))
         rate.sleep()
         time += 0.1

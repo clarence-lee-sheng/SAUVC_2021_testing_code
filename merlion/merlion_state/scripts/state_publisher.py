@@ -16,7 +16,7 @@ class StatePublisher:
         self.pitch_pub = rospy.Publisher('pitch', Float64, queue_size=10)
         self.depth_pub = rospy.Publisher('depth', Float64, queue_size=10)
 
-        rospy.Subscriber('input/imu', Imu, self.imu_callback)
+        rospy.Subscriber('input/imu', Imu, self.imu_callback) #.vectornav/IMU 
         rospy.Subscriber('input/pressure', FluidPressure, self.pressure_callback)
 
     def imu_callback(self, msg):
