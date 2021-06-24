@@ -1,6 +1,6 @@
 <launch>
   <arg name="ns" default="merlion_hardware"/>
-  <arg name="mcu_port" default="/dev/ttyUSB_MCU"/>
+  <arg name="mcu_port" default="/dev/ttyACM0"/>
 
   <group ns="$(arg ns)">
     <node name="thruster_manager" pkg="merlion_hardware" type="thruster_manager.py" output="screen">

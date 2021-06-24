@@ -4,8 +4,7 @@ import numpy as np
 from typing import Sequence
 
 import rospy
-from geometry_msgs.msg import motor 
-from std_msgs import Twist 
+from geometry_msgs.msg import Twist 
 from merlion_hardware.msg import Motor 
 
 class ThrusterManagerNode:
