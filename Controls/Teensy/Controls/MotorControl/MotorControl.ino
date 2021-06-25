@@ -2,6 +2,10 @@
 #include <std_msgs/String.h>
 #include <std_msgs/UInt16.h>
 #include <Servo.h>
+#include <Wire.h>
+#include "MS5837.h"
+
+MS5837 sensor;
 
 #define MOTORSIZE 5 // Change this if this physical motor count increases
 #define M1_PIN 23
@@ -9,6 +13,8 @@
 #define M3_PIN 14
 #define M4_PIN 22
 #define M5_PIN 15
+
+
 
 
 struct Motor 
@@ -37,12 +43,38 @@ int armingFreq[MOTORSIZE] = {1480,1480,1480,1480,1480};
 int generalArmingFreq = 1480;
 Servo esc;
 
+
+ros::NodeHandle  nh;
+
+sensor_msgs::FluidPressure pressureData;
+ros::Publisher pressurePub("merlion_hardware/pressure", &pressureData);
+
 void setup() 
 {
   Serial.begin(9600);
   armAll();
   //TODO: find a way to cut off comms when mother controller is not connected
   rosInit();
+
+  nh.initNode();
+  nh.advertise(pressurePub);
+  Serial.println("Starting");
+  
+  Wire.begin();
+
+  // Initialize pressure sensor
+  // Returns true if initialization was successful
+  // We can't continue with the rest of the program unless we can initialize the sensor
+  while (!sensor.init()) {
+    Serial.println("Init failed!");
+    Serial.println("Are SDA/SCL connected correctly?");
+    Serial.println("Blue Robotics Bar30: White=SDA, Green=SCL");
+    Serial.println("\n\n\n");
+    delay(5000);
+  }
+
+  sensor.setModel(MS5837::MS5837_30BA);
+  sensor.setFluidDensity(997); // kg/m^3 (freshwater, 1029 for seawater)
 }
 
 void loop() 
@@ -50,6 +82,11 @@ void loop()
  //TODO:Update Motor state here
 
  //TODO:Update Pressure state here
+  sensor.read();
+
+  pressureData.fluid_pressure = sensor.pressure() ;  
+  pressurePub.publish( &pressureData );
+  nh.spinOnce();
  
   motorState_Publisher.publish(&motorState_msg);
   node_handle.spinOnce();
