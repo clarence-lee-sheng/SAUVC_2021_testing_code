@@ -34,4 +34,4 @@ NODES
 ```
 What you have just done is launch the ROS Audio Capture node. This node directly takes audio signals from your input device (i.e. microphone, hydrophone) and streams it in mp3 format. The default bitrate and sample rate are as shown above.
 
-<Documentation WIP>
+-WIP-
