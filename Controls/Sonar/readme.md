@@ -32,6 +32,26 @@ NODES
   /audio/
     audio_capture (audio_capture/audio_capture)
 ```
-What you have just done is launch the ROS Audio Capture node. This node directly takes audio signals from your input device (i.e. microphone, hydrophone) and streams it in mp3 format. The default bitrate and sample rate are as shown above.
+What you have just done is launch the ROS Audio Capture node. This node directly takes audio signals from your input device (i.e. microphone, hydrophone) and streams it in mp3 format. The default bitrate and sample rate are as shown above. You can verify if the topics are active by running `rostopic list` and verify that there is audio input by running the following: 
+```
+rostopic hz /audio/audio
+```
 
--WIP-
+**Explanation of terms:** Sample rate is the number of times audio is captured in one second. You can think of it as the audio equivalent of frames-per-second (FPS). Bitrate is the number of bits processed per second. Instead of samples, it refers to the number of bits of information. Bitrate is used more in a streaming or playback context, as it is essentially a measure of how accurately the processing can convey the originally sampled audio.
+
+To be able to hear the playback of the audio you are streaming, you can use the `audio_play` node. First, change your source and launch the `audio_play` node by inputting the following commands:
+```
+source ~/catkin_ws/devel/setup.bash
+roslaunch audio_play play.launch
+```
+This will enable you to hear the audio being sent through the /audio rostopic.
+
+If you would like to verify the information being sent through the /audio rostopic, you can input `rostopic echo /audio/audio_info` for information. It will output something similar to the following:
+```
+channels: 1
+sample_rate: 16000
+sample_format: "S16LE"
+bitrate: 128
+coding_format: "mp3"
+```
+This reflects the sample rate and bitrate information from before. If you would like to see the actual individual samples and bits of integer data, you can input `rostopic echo /audio/audio`.
