@@ -28,7 +28,7 @@ class StatePublisher:
 
     def pressure_callback(self, msg):
         pressure = msg.fluid_pressure
-        depth = (pressure / 101.1325 - 1) * 10
+        depth = (pressure -101300) / (997.0474*9.80665)
         self.depth_pub.publish(Float64(depth))
 
 

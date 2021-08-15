@@ -6,10 +6,11 @@ from typing import Sequence
 import rospy
 from geometry_msgs.msg import Twist 
 from merlion_hardware.msg import Motor 
+import pydrive
 
 class ThrusterManagerNode:
     def __init__(self):
-        self.node_name = 'thruster_manager'
+        self.node_name = 'merlion_thruster'
         rospy.init_node(self.node_name)
 
         self.tranform_matrix = np.array([
@@ -20,11 +21,11 @@ class ThrusterManagerNode:
             [1,  0,  0,  0,  0,  1],  # right rear motor
             [0,  0,  1,  0,  -1,  0]   # rear motor
         ])
-        self.scale = 10
+        self.scale = 100
         self.num_thrusters = len(self.tranform_matrix)
 
         rospy.Subscriber(self.node_name + '/input', Twist, self.input_callback)
-        self.thruster_pub = rospy.Publisher('thruster_values', Motor, queue_size=10)
+        self.thruster_pub = rospy.Publisher('merlion_hardware/thruster_values', Motor, queue_size=10)
 
         rospy.loginfo("ThrusterManagerNode started")
 
@@ -34,13 +35,13 @@ class ThrusterManagerNode:
             [msg.angular.x], [msg.angular.y], [msg.angular.z]
         ])
         output = self.scale * self.tranform_matrix @ control_vector
-        self.update_thrusters(output)
+        # self.update_thrusters(output)
         msg = Motor()
-        msg.m1 = output[0]
-        msg.m2 = output[1]
-        msg.m3 = output[2]
-        msg.m4 = output[3]
-        msg.m5 = output[4]
+        msg.m1 = int(output[0])
+        msg.m2 = int(output[1])
+        msg.m3 = int(output[2])
+        msg.m4 = int(output[3])
+        msg.m5 = int(output[4])
         self.thruster_pub.publish(msg)
 
 if __name__ == '__main__':

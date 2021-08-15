@@ -5,13 +5,11 @@ from typing import Tuple
 from std_msgs.msg import Float64
 from geometry_msgs.msg import Twist
 
-
 class PIDNode:
     def __init__(self):
         rospy.init_node('merlion_pid_publisher')
 
         self.output = rospy.Publisher('pid_publisher', Twist, queue_size=10)
-
         self.control_vectors = []
         trans_matrix = np.identity(6)
         X, Y, Z, AX, AY, AZ = range(6)

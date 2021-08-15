@@ -6,7 +6,6 @@
 #include "MS5837.h"
 #include <sensor_msgs/FluidPressure.h>
 #include <merlion_hardware/Motor.h>
-#.
 
 
 MS5837 sensor;
@@ -36,7 +35,6 @@ ros::NodeHandle node_handle; //rosserial object
 std_msgs::String sub_msg; // ros message
 std_msgs::UInt16 motorState_msg; // motorState string publisher message
 
-ros::Publisher motorState_Publisher("motor_state",&motorState_msg);
 ros::Subscriber<merlion_hardware::Motor> motor_Subscriber("/merlion_hardware/thruster_values", &motorCommandCallback);
 
 MotorSpec motors[MOTORSIZE];
@@ -52,6 +50,7 @@ void setup()
 {
   Serial.begin(9600);
   armAll();
+  Serial.println(generalArmingFreq);
   //TODO: find a way to cut off comms when mother controller is not connected
   rosInit();
   pressureSensorInit();
@@ -59,17 +58,19 @@ void setup()
 
 void loop() 
 {
- //TODO:Update Motor state here
-
- //TODO:Update Pressure state here
-
   sensor.read();
-
   pressureData.fluid_pressure = sensor.pressure() ;  
-//  pressurePub.publish( &pressureData );;
+  pressurePub.publish( &pressureData );
   Serial.println(sensor.depth());
-  motorState_Publisher.publish(&motorState_msg);
   node_handle.spinOnce();
+
+////  for(int i =100  ; i>0 ; i-=1 ) 
+////  {
+//  int i = 100;
+//     Serial.println(i);
+//     int speedPercentage[] = {i,i,i,i,i}; 
+//     motorSetSpeedAllPercentage(speedPercentage);
+////  }
   delay(100);
 }
 
@@ -99,7 +100,7 @@ void pressureSensorInit()
 void armAll()
 {
   Serial.println("Arming Motors");
-  delay(5000);
+//  delay(5000);
   for(int i = 0 ; i<MOTORSIZE ; i++)
   {
     motors[i].pinNo = motorPins[i];
@@ -129,9 +130,9 @@ void armAll()
 void rosInit()
 {
   node_handle.initNode();
-  node_handle.advertise(motorState_Publisher);
+  node_handle.advertise(pressurePub);
   node_handle.subscribe(motor_Subscriber);
-//  node_handle.advertise(pressurePub);
+  
 }
 ///============================ROS CALLBACK CODE ===================================
 //TODO : Add ROSSERIAL CODE HERE
@@ -144,24 +145,25 @@ void motorCommandCallback(const merlion_hardware::Motor& motorVal )
   int m5 = motorVal.m5;
 
   /// Callback function for motor / pressure sensore return 
-  motorSetSpeedFreq(motors[0],m1);
-  motorSetSpeedFreq(motors[1],m2);
-  motorSetSpeedFreq(motors[2],m3);
-  motorSetSpeedFreq(motors[3],m4);
-  motorSetSpeedFreq(motors[4],m5);
+  motorSetSpeedFreq(motors[0],freqConversion(m1));
+  motorSetSpeedFreq(motors[1],freqConversion(m2));
+  motorSetSpeedFreq(motors[2],freqConversion(m3));
+  motorSetSpeedFreq(motors[3],freqConversion(m4));
+  motorSetSpeedFreq(motors[4], freqConversion(m5));
 }
 
 
 ///============================MOTOR CONTROL CODE ==================================
-//void motorSetSpeedAllPercentage(int _speedPercentage [])
-//{
-//  //TAKE NOTE : MAKE SURE THAT _speedPercentage ARRAY SIZE IS EQUALS TO MOTORSIZE
-//  for(int i =0 ;i<MOTORSIZE ; i++)
-//  {
-//    motors[i].esc.writeMicroseconds(freqConversion(_speedPercentage[i]));  
-//    Serial.print("Motor Speed change : Motor : "); Serial.print(i); Serial.print(" speedPercentage : ");Serial.println(_speedPercentage[i]);
-//  }
-//}
+void motorSetSpeedAllPercentage(int _speedPercentage [])
+{
+  //TAKE NOTE : MAKE SURE THAT _speedPercentage ARRAY SIZE IS EQUALS TO MOTORSIZE
+  for(int i =0 ;i<MOTORSIZE ; i++)
+  {
+    motors[i].esc.writeMicroseconds(freqConversion(_speedPercentage[i]));  
+ 
+    Serial.print("Motor Speed change : Motor : "); Serial.print(i); Serial.print(" speedPercentage : ");Serial.println(_speedPercentage[i]);
+  }
+}
 
 void motorSetSpeedFreq(MotorSpec _motor,int _speedFreq)
 {
@@ -173,29 +175,31 @@ void motorSetSpeedFreq(MotorSpec _motor,int _speedFreq)
 //{
 //  //TODO:SCALE THIS UP TO 4 MOTORS FOR EASE OF CONTROL 
 //  _motor.esc.writeMicroseconds(freqConversion(_speedPercentage));
-//  Serial.print("Motor Speed change : ");Serial.println(_speedPercentage);
+//  Serial.print("Motor Speed change : ");Serial.println(_speedPercentage);p
+
 //}
 ///============================COMPUTATION CODE ==================================
-//int freqConversion(int speedPercentage)
-//{
-//  if(speedPercentage >= 0)
-//  {
-//    //CW code : 
-//    int freq = map(speedPercentage,0,100,generalArmingFreq,1900 );
-//    return freq;
-//  }
-//  else if(speedPercentage <=0 )
-//  {
-//    //ACW code : 
-//    int freq = map(-speedPercentage,0,100,1100,generalArmingFreq);
-//    return freq;
-//  }
-//  else
-//  {
-//    //default code 
-//    Serial.print("freq :Invalid input : speedPercentage : ");Serial.println(speedPercentage);
-//  }
-//}
+int freqConversion(int speedPercentage)
+{
+  if(speedPercentage >= 0)
+  {
+    //CW code : 
+    int freq = map(speedPercentage,0,100,generalArmingFreq,1900 );
+    return freq;
+  }
+  else if(speedPercentage <=0 )
+  {
+    //ACW code : 
+    int freq = map(-speedPercentage,0,100,generalArmingFreq, 1100);
+    Serial.println(freq);
+    return freq;
+  }
+  else
+  {
+    //default code 
+    Serial.print("freq :Invalid input : speedPercentage : ");Serial.println(speedPercentage);
+  }
+}
 
 ///============================TESTING CODE ==================================
 //void testSingle(MotorSpec motor)
