@@ -1,6 +1,7 @@
 #include <ros.h>
 #include <std_msgs/String.h>
 #include <std_msgs/UInt16.h>
+#include <std_msgs/Bool.h>
 #include <Servo.h>
 #include <Wire.h>
 #include "MS5837.h"
@@ -25,6 +26,16 @@ struct MotorSpec
    Servo esc; 
 };
 
+//state variables 
+bool robotActive = false;
+
+//initialise servos
+
+MotorSpec motors[MOTORSIZE];
+int motorPins [MOTORSIZE] = {M1_PIN,M2_PIN,M3_PIN,M4_PIN,M5_PIN};
+int armingFreq[MOTORSIZE] = {1480,1480,1480,1480,1480};
+int generalArmingFreq = 1480;
+Servo esc;
 
 ///=============Function declaration
 void motorCommandCallback(const merlion_hardware::Motor& motorVal );
@@ -37,27 +48,31 @@ std_msgs::UInt16 motorState_msg; // motorState string publisher message
 
 ros::Subscriber<merlion_hardware::Motor> motor_Subscriber("/merlion_hardware/thruster_values", &motorCommandCallback);
 
-MotorSpec motors[MOTORSIZE];
-int motorPins [MOTORSIZE] = {M1_PIN,M2_PIN,M3_PIN,M4_PIN,M5_PIN};
-int armingFreq[MOTORSIZE] = {1480,1480,1480,1480,1480};
-int generalArmingFreq = 1480;
-Servo esc;
-
 sensor_msgs::FluidPressure pressureData;
 ros::Publisher pressurePub("merlion_hardware/pressure", &pressureData);
+//
+//void setRobotState(const std_msgs::String &motorVal);
+//ros::Subscriber<std_msgs::String> robotStateSubscriber("/merlion_init/robot_state", &setRobotState);
+//
+//std_msgs::Bool isMotorActive; 
+//ros::Publisher motorActiveStatePub("/merlion_init/motor_active", &isMotorActive);
 
 void setup() 
 {
   Serial.begin(9600);
-  armAll();
-  Serial.println(generalArmingFreq);
-  //TODO: find a way to cut off comms when mother controller is not connected
+  Serial.print("starting");
   rosInit();
+//  armAll();/
+  //TODO: find a way to cut off comms when mother controller is not connected
   pressureSensorInit();
 }
 
 void loop() 
-{
+{ 
+  if (!robotActive)
+  {
+    return;
+  }
   sensor.read();
   pressureData.fluid_pressure = sensor.pressure() ;  
   pressurePub.publish( &pressureData );
@@ -114,6 +129,8 @@ void armAll()
     Serial.print(motors[i].pinNo);Serial.print(" ");Serial.println(motors[i].armingFreq);
   }
   Serial.println("MOTORS ARMED !!!");
+  //isMotorActive.data = true; 
+  //motorActiveStatePub.publish(&isMotorActive);
 }
 //
 
@@ -131,7 +148,9 @@ void rosInit()
 {
   node_handle.initNode();
   node_handle.advertise(pressurePub);
+//  node_handle.advertise(motorActiveStatePub);/
   node_handle.subscribe(motor_Subscriber);
+//  node_handle.subscribe(robotStateSubscriber);/
   
 }
 ///============================ROS CALLBACK CODE ===================================
@@ -151,6 +170,14 @@ void motorCommandCallback(const merlion_hardware::Motor& motorVal )
   motorSetSpeedFreq(motors[3],freqConversion(m4));
   motorSetSpeedFreq(motors[4], freqConversion(m5));
 }
+
+//void setRobotState(const std_msgs::String &robotState)
+//{
+////    if (robotState.data != "not_active")
+////    {
+////      robotActive = true;
+////    }
+//}  
 
 
 ///============================MOTOR CONTROL CODE ==================================
@@ -197,7 +224,9 @@ int freqConversion(int speedPercentage)
   else
   {
     //default code 
-    Serial.print("freq :Invalid input : speedPercentage : ");Serial.println(speedPercentage);
+    Serial.print("freq :Invalid input : speedPercentage : ");
+    Serial.println(speedPercentage);
+    return 0;
   }
 }
 

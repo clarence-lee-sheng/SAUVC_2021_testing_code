@@ -1,6 +1,8 @@
 #include <ros.h>
 #include <std_msgs/String.h>
 #include <std_msgs/UInt16.h>
+#include <std_msgs/Float32.h>
+#include <std_msgs/Bool.h>
 #include <Servo.h>
 #include <Wire.h>
 #include "MS5837.h"
@@ -26,6 +28,9 @@ struct MotorSpec
 };
 
 
+//state variables 
+bool robotActive = false;
+
 ///=============Function declaration
 void motorCommandCallback(const merlion_hardware::Motor& motorVal );
 
@@ -46,22 +51,38 @@ Servo esc;
 sensor_msgs::FluidPressure pressureData;
 ros::Publisher pressurePub("merlion_hardware/pressure", &pressureData);
 
+std_msgs::Float32 sensorDepth; 
+ros::Publisher depthPub("merlion_hardware/sensor_depth", &sensorDepth);
+
+void setRobotState(const std_msgs::UInt16 &motorVal);
+ros::Subscriber<std_msgs::UInt16> robotStateSubscriber("/merlion_init/robot_state", &setRobotState);
+
+std_msgs::Bool isMotorActive; 
+ros::Publisher motorActiveStatePub("/merlion_init/motor_active", &isMotorActive);
+
 void setup() 
 {
   Serial.begin(9600);
+  rosInit();
   armAll();
   //TODO: find a way to cut off comms when mother controller is not connected
-  rosInit();
+  
   pressureSensorInit();
 }
 
 void loop() 
 {
+  if (!robotActive)
+  {
+    return;
+  }
   sensor.read();
   pressureData.fluid_pressure = sensor.pressure() ;  
   pressurePub.publish( &pressureData );
-  Serial.println(sensor.depth());
+  sensorDepth.data = sensor.depth(); 
+  depthPub.publish( &sensorDepth );
   node_handle.spinOnce();
+
   delay(100);
 }
 
@@ -105,6 +126,14 @@ void armAll()
     Serial.print(motors[i].pinNo);Serial.print(" ");Serial.println(motors[i].armingFreq);
   }
   Serial.println("MOTORS ARMED !!!");
+  isMotorActive.data = true; 
+  for (int i=0; i < 10; i++)
+  {
+    motorActiveStatePub.publish(&isMotorActive);
+    node_handle.spinOnce();
+    delay(100);
+  }
+  
 }
 //
 
@@ -122,8 +151,11 @@ void rosInit()
 {
   node_handle.initNode();
   node_handle.advertise(pressurePub);
+  node_handle.advertise(depthPub);
+  node_handle.advertise(motorActiveStatePub);
   node_handle.subscribe(motor_Subscriber);
-  
+  node_handle.subscribe(robotStateSubscriber);
+  delay(2000);
 }
 ///============================ROS CALLBACK CODE ===================================
 //TODO : Add ROSSERIAL CODE HERE
@@ -136,13 +168,20 @@ void motorCommandCallback(const merlion_hardware::Motor& motorVal )
   int m5 = motorVal.m5;
 
   /// Callback function for motor / pressure sensore return 
-  motorSetSpeedFreq(motors[0],m1);
-  motorSetSpeedFreq(motors[1],m2);
-  motorSetSpeedFreq(motors[2],m3);
-  motorSetSpeedFreq(motors[3],m4);
-  motorSetSpeedFreq(motors[4],m5);
+  motorSetSpeedFreq(motors[0],freqConversion(m1));
+  motorSetSpeedFreq(motors[1],freqConversion(m2));
+  motorSetSpeedFreq(motors[2],freqConversion(m3));
+  motorSetSpeedFreq(motors[3],freqConversion(m4));
+  motorSetSpeedFreq(motors[4], freqConversion(m5));
 }
 
+void setRobotState(const std_msgs::UInt16& robotState)
+{
+    if (robotState.data != 0)
+    {
+      robotActive = true;
+    }
+}  
 
 ///============================MOTOR CONTROL CODE ==================================
 //void motorSetSpeedAllPercentage(int _speedPercentage [])
@@ -168,26 +207,26 @@ void motorSetSpeedFreq(MotorSpec _motor,int _speedFreq)
 //  Serial.print("Motor Speed change : ");Serial.println(_speedPercentage);
 //}
 ///============================COMPUTATION CODE ==================================
-//int freqConversion(int speedPercentage)
-//{
-//  if(speedPercentage >= 0)
-//  {
-//    //CW code : 
-//    int freq = map(speedPercentage,0,100,generalArmingFreq,1900 );
-//    return freq;
-//  }
-//  else if(speedPercentage <=0 )
-//  {
-//    //ACW code : 
-//    int freq = map(-speedPercentage,0,100,1100,generalArmingFreq);
-//    return freq;
-//  }
-//  else
-//  {
-//    //default code 
-//    Serial.print("freq :Invalid input : speedPercentage : ");Serial.println(speedPercentage);
-//  }
-//}
+int freqConversion(int speedPercentage)
+{
+ if(speedPercentage >= 0)
+ {
+   //CW code : 
+   int freq = map(speedPercentage,0,100,generalArmingFreq,1900);
+   return freq;
+ }
+ else if(speedPercentage <=0 )
+ {
+   //ACW code : 
+   int freq = map(-speedPercentage,0,100,generalArmingFreq,1100);
+   return freq;
+ }
+ else
+ {
+   //default code 
+   Serial.print("freq :Invalid input : speedPercentage : ");Serial.println(speedPercentage);
+ }
+}
 
 ///============================TESTING CODE ==================================
 //void testSingle(MotorSpec motor)
