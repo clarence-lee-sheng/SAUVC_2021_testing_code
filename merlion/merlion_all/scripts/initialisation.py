@@ -46,27 +46,9 @@ class RobotInitialisation(object):
 
         self.robot_state = 0
         self.robot_init_pub = rospy.Publisher(f"/{self.node_name}/robot_state",UInt16,queue_size=10)
-
-        # self.motor_active = False 
-        # self.motor_init_sub = rospy.Subscriber("/merlion_init/motor_active", Bool, self.set_motor_active)
-
-        # self.imu_active = True 
-        # self.imu_init_sub = rospy.Subscriber("/merlion_init/imu_active", self.set_imu_active)
-
-        # self.hydrophones_received = True 
-        # self.hydrophones_init_sub = rospy.Subscriber("/merlion_init/hydrophones_active", self.set_hydrophones_active)
-
-        # self.front_camera_active = True
-        # self.front_camera_init_sub = rospy.Subscriber("/merlion_init/front_camera_active", self.set_front_camera_active)
-
-        # self.bottom_camera_active = True 
-        # self.bottom_camera_init_sub = rospy.Subscriber("/merlion_init/bottom_camera_active", self.set_bottom_camera_active)
     
     def set_init_state(self, state, name): 
-        print(state.data)
-        print(name)
         setattr(self,f"{name}_active",state)
-        print(getattr(self, f"{name}_active"))
         self.publish_init_state() 
 
 
@@ -83,6 +65,7 @@ class RobotInitialisation(object):
         
         message = UInt16() 
         message.data = self.robot_state
+
         self.robot_init_pub.publish(message) 
 
 if __name__ == "__main__": 
