@@ -74,6 +74,8 @@ void loop()
 {
   if (!robotActive)
   {
+    delay(100);
+    node_handle.spinOnce();
     return;
   }
   sensor.read();
