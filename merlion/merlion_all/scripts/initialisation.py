@@ -39,7 +39,7 @@ class RobotInitialisation(object):
             name = init_state["name"]
             start_state = init_state["start_state"]
             setattr(self, "%s_active" % name,start_state)  
-            setattr(self, f"{name}_init_sub", rospy.Subscriber("/%s/%s_active" % (self.node_name, name), Bool, lambda msg: self.set_init_state(msg, name)))
+            setattr(self, "%s_init_sub"%name, rospy.Subscriber("/%s/%s_active" % (self.node_name, name), Bool, lambda msg: self.set_init_state(msg, name)))
 
         for init_state in self.init_states: 
             set_state(self, init_state)
