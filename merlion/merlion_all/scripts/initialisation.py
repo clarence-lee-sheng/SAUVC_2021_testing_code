@@ -38,29 +38,18 @@ class RobotInitialisation(object):
         def set_state(robot_object, init_state):
             name = init_state["name"]
             start_state = init_state["start_state"]
-            try:
-                setattr(self, f"{name}_active",start_state)  
-                setattr(self, f"{name}_init_sub", rospy.Subscriber(f"/{self.node_name}/{name}_active", Bool, lambda msg: self.set_init_state(msg, name)))
-            except: 
-                setattr(self, "%s_active" % name,start_state)  
-                setattr(self, f"{name}_init_sub", rospy.Subscriber("/%s/%s_active" % (self.node_name, name), Bool, lambda msg: self.set_init_state(msg, name)))
+            setattr(self, "%s_active" % name,start_state)  
+            setattr(self, f"{name}_init_sub", rospy.Subscriber("/%s/%s_active" % (self.node_name, name), Bool, lambda msg: self.set_init_state(msg, name)))
 
         for init_state in self.init_states: 
             set_state(self, init_state)
 
         self.robot_state = 0
-        try:
-            self.robot_init_pub = rospy.Publisher(f"/{self.node_name}/robot_state",UInt16,queue_size=10)
-        except: 
-            self.robot_init_pub = rospy.Publisher("/%s/robot_state"%self.node_name,UInt16,queue_size=10)
+        self.robot_init_pub = rospy.Publisher("/%s/robot_state"%self.node_name,UInt16,queue_size=10)
 
 
     def set_init_state(self, state, name): 
-        try:
-            setattr(self,f"{name}_active",state)
-        except: 
-            setattr(self,"%s_active"%name,state)
-
+        setattr(self,"%s_active"%name,state)
         self.publish_init_state() 
 
 
@@ -68,14 +57,9 @@ class RobotInitialisation(object):
         all_states_active = True 
         for init_state in self.init_states: 
             name = init_state["name"]
-            try: 
-                if not getattr(self, f"{name}_active"): 
-                    print(f"{name} not active")
-                    all_states_active = False 
-            except: 
-                if not getattr(self, "%s_active"%name): 
-                    print("%s not active"%name)
-                    all_states_active = False 
+            if not getattr(self, "%s_active"%name): 
+                print("%s not active"%name)
+                all_states_active = False 
         if all_states_active:
             self.robot_state = 1
         
