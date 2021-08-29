@@ -70,18 +70,39 @@ void setup()
   pressureSensorInit();
 }
 
+int i = 100;
+bool flag = true;
+
 void loop() 
 {
-  if (!robotActive)
-  {
-    return;
-  }
+//  if (!robotActive)
+//  {
+//    return;
+//  }
   sensor.read();
   pressureData.fluid_pressure = sensor.pressure() ;  
-  pressurePub.publish( &pressureData );
+  Serial.println(sensor.pressure());
+  pressurePub.publish(&pressureData);
   sensorDepth.data = sensor.depth(); 
   depthPub.publish( &sensorDepth );
   node_handle.spinOnce();
+  
+//
+  if (i == 100){
+    flag = false; 
+  }else if(i == -100){
+    flag = true;
+  }
+
+  if (flag){
+    i += 1;
+  }else{
+    i -= 1;
+  }
+  
+  int speedPercentage[] = {i,i,i,i,i}; 
+  motorSetSpeedAllPercentage(speedPercentage);
+
 
   delay(100);
 }
@@ -184,16 +205,16 @@ void setRobotState(const std_msgs::UInt16& robotState)
 }  
 
 ///============================MOTOR CONTROL CODE ==================================
-//void motorSetSpeedAllPercentage(int _speedPercentage [])
-//{
-//  //TAKE NOTE : MAKE SURE THAT _speedPercentage ARRAY SIZE IS EQUALS TO MOTORSIZE
-//  for(int i =0 ;i<MOTORSIZE ; i++)
-//  {
-//    motors[i].esc.writeMicroseconds(freqConversion(_speedPercentage[i]));  
-//    Serial.print("Motor Speed change : Motor : "); Serial.print(i); Serial.print(" speedPercentage : ");Serial.println(_speedPercentage[i]);
-//  }
-//}
-
+void motorSetSpeedAllPercentage(int _speedPercentage [])
+{
+  //TAKE NOTE : MAKE SURE THAT _speedPercentage ARRAY SIZE IS EQUALS TO MOTORSIZE
+  for(int i =0 ;i<MOTORSIZE ; i++)
+  {
+    motors[i].esc.writeMicroseconds(freqConversion(_speedPercentage[i]));  
+ 
+    //Serial.print("Motor Speed change : Motor : "); Serial.print(i); Serial.print(" speedPercentage : ");Serial.println(_speedPercentage[i]);
+  }
+}
 void motorSetSpeedFreq(MotorSpec _motor,int _speedFreq)
 {
   //TODO:SCALE THIS UP TO 4 MOTORS FOR EASE OF CONTROL
@@ -218,7 +239,7 @@ int freqConversion(int speedPercentage)
  else if(speedPercentage <=0 )
  {
    //ACW code : 
-   int freq = map(-speedPercentage,0,100,generalArmingFreq,1100);
+   int freq = map(-speedPercentage,0,100,generalArmingFreq,1100);             
    return freq;
  }
  else
