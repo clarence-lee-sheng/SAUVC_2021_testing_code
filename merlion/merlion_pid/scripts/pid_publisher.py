@@ -1,7 +1,6 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2
 import rospy
 import numpy as np
-from typing import Tuple
 from std_msgs.msg import Float64
 from geometry_msgs.msg import Twist
 
@@ -19,12 +18,12 @@ class PIDNode:
         rospy.Subscriber('depth/control_effort', Float64, self.callback_factory(-trans_matrix[Z]))
         rospy.Subscriber('speed/setpoint',       Float64, self.callback_factory(trans_matrix[X]))
 
-    def callback_factory(self, trans_vector: Tuple[float, float, float, float, float, float]):
+    def callback_factory(self, trans_vector):
         trans_vector = np.array(trans_vector)
         callback_id = len(self.control_vectors)
         self.control_vectors.append(0 * trans_vector)
 
-        def pid_effort_callback(msg: Float64):
+        def pid_effort_callback(msg):
             self.control_vectors[callback_id] = msg.data * trans_vector
             self.publish_effort()
 

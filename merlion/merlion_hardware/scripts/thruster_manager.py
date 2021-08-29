@@ -1,12 +1,10 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2
 
 import numpy as np
-from typing import Sequence
 
 import rospy
 from geometry_msgs.msg import Twist 
 from merlion_hardware.msg import Motor 
-import pydrive
 
 class ThrusterManagerNode:
     def __init__(self):
@@ -29,12 +27,12 @@ class ThrusterManagerNode:
 
         rospy.loginfo("ThrusterManagerNode started")
 
-    def input_callback(self, msg: Twist):
+    def input_callback(self, msg):
         control_vector = np.array([
             [msg.linear.x], [msg.linear.y], [msg.linear.z],
             [msg.angular.x], [msg.angular.y], [msg.angular.z]
         ])
-        output = self.scale * self.tranform_matrix @ control_vector
+        output = self.scale * self.tranform_matrix.dot(control_vector)
         # self.update_thrusters(output)
         msg = Motor()
         msg.m1 = int(output[0])

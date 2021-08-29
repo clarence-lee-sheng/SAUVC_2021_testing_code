@@ -10,7 +10,7 @@ class RobotInitialisation(object):
         self.node_name = "merlion_init"
         self.init_states = [
             {
-                "name": "ssh_command_sent", 
+                "name": "start", 
                 "start_state": False
             },
             {
@@ -49,17 +49,19 @@ class RobotInitialisation(object):
 
 
     def set_init_state(self, state, name): 
-        setattr(self,"%s_active"%name,state)
+        setattr(self,"%s_active"%name,state.data)
+        print('setting state of name to ', state)
         self.publish_init_state() 
-
 
     def publish_init_state(self): 
         all_states_active = True 
         for init_state in self.init_states: 
-            name = init_state["name"]
+            name = init_state["name"]                                    
+	    print(name, getattr(self, "%s_active"%name))
             if not getattr(self, "%s_active"%name): 
                 print("%s not active"%name)
-                all_states_active = False 
+                all_states_active = False
+                self.robot_state = 0 
         if all_states_active:
             print("robot active")
             self.robot_state = 1
