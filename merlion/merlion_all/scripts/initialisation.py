@@ -61,6 +61,7 @@ class RobotInitialisation(object):
                 print("%s not active"%name)
                 all_states_active = False 
         if all_states_active:
+            print("robot active")
             self.robot_state = 1
         
         message = UInt16() 

@@ -75,10 +75,19 @@ bool flag = true;
 
 void loop() 
 {
+<<<<<<< HEAD
 //  if (!robotActive)
 //  {
 //    return;
 //  }
+=======
+  if (!robotActive)
+  {
+    delay(100);
+    node_handle.spinOnce();
+    return;
+  }
+>>>>>>> a0a4ab719c40162d45e45eb9322d42db714ddf09
   sensor.read();
   pressureData.fluid_pressure = sensor.pressure() ;  
   Serial.println(sensor.pressure());
