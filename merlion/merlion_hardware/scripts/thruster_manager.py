@@ -19,6 +19,14 @@ class ThrusterManagerNode:
             [1,  0,  0,  0,  0,  1],  # right rear motor
             [0,  0,  1,  0,  -1,  0]   # rear motor
         ])
+
+        self.normalizing_matrix = np.array([
+            [1/3, 0 ,  0 ,  0 ,  0 ], 
+            [ 0, 1/3,  0 ,  0 ,  0 ], 
+            [ 0,  0 , 1/2,  0 ,  0 ], 
+            [ 0,  0,   0,  1/2,  0 ], 
+            [ 0,  0,   0,   0,  1/2], 
+        ])
         self.scale = 100
         self.num_thrusters = len(self.tranform_matrix)
 
@@ -32,7 +40,7 @@ class ThrusterManagerNode:
             [msg.linear.x], [msg.linear.y], [msg.linear.z],
             [msg.angular.x], [msg.angular.y], [msg.angular.z]
         ])
-        output = self.scale * self.tranform_matrix.dot(control_vector)
+        output = self.scale * self.normalizing_matrix.dot(self.tranform_matrix.dot(control_vector))
         # self.update_thrusters(output)
         msg = Motor()
         msg.m1 = int(output[0])
