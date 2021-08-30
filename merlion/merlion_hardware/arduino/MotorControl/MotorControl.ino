@@ -17,7 +17,7 @@ MS5837 sensor;
 #define M2_PIN 10
 #define M3_PIN 14
 #define M4_PIN 22
-#define M5_PIN 15
+#define M5_PIN 16
 
 
 struct MotorSpec 
@@ -93,7 +93,7 @@ void loop()
   depthPub.publish( &sensorDepth );
   node_handle.spinOnce();
   
-//
+
 //  if (i == 100){
 //    flag = false; 
 //  }else if(i == -100){
@@ -139,7 +139,6 @@ void pressureSensorInit()
 void armAll()
 {
   Serial.println("Arming Motors");
-  delay(5000);
   for(int i = 0 ; i<MOTORSIZE ; i++)
   {
     motors[i].pinNo = motorPins[i];
@@ -148,7 +147,7 @@ void armAll()
 
     motors[i].esc.writeMicroseconds(motors[i].armingFreq);
     ///BLOCKING CODE 
-    delay(3000);
+    delay(8000);
     ///BLOCKING CODE 
     Serial.print(motors[i].pinNo);Serial.print(" ");Serial.println(motors[i].armingFreq);
   }
