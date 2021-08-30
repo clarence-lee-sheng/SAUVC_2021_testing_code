@@ -40,7 +40,7 @@ class ThrusterManagerNode:
             [msg.linear.x], [msg.linear.y], [msg.linear.z],
             [msg.angular.x], [msg.angular.y], [msg.angular.z]
         ])
-        output = self.scale * self.normalizing_matrix.dot(self.tranform_matrix.dot(control_vector))
+        output = self.scale * self.tranform_matrix.dot(control_vector)
         # self.update_thrusters(output)
         msg = Motor()
         msg.m1 = int(output[0])
