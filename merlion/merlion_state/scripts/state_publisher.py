@@ -2,6 +2,7 @@
 
 import rospy
 from std_msgs.msg import Float64
+from std_msgs.msg import Float32
 from sensor_msgs.msg import Imu
 from sensor_msgs.msg import FluidPressure
 from tf.transformations import euler_from_quaternion
@@ -17,7 +18,8 @@ class StatePublisher:
         self.depth_pub = rospy.Publisher('depth', Float64, queue_size=10)
 
         rospy.Subscriber('input/imu', Imu, self.imu_callback) #.vectornav/IMU 
-        rospy.Subscriber('input/pressure', FluidPressure, self.pressure_callback)
+        # rospy.Subscriber('input/pressure', FluidPressure, self.pressure_callback)
+        rospy.Subscriber('/merlion_hardware/sensor_depth', Float32, self.pressure_callback)
 
     def imu_callback(self, msg):
         quaternion = [msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w]
@@ -27,8 +29,9 @@ class StatePublisher:
         self.pitch_pub.publish(Float64(data=-pitch))
 
     def pressure_callback(self, msg):
-        pressure = msg.fluid_pressure
-        depth = (pressure -101300) / (997.0474*9.80665)
+        # pressure = msg.fluid_pressure
+        # depth = (pressure - 101300) / (997.0474*9.80665)
+        depth = msg.data
         self.depth_pub.publish(Float64(depth))
 
 
