@@ -1,3 +1,14 @@
+/*
+ * Written by : Clarence (ROS Integration) , Lim Pin (Hardware Interfacing)
+ * Last Editted : 10/21/21
+ *
+ * The code below is used for SAUVC Motor control system , this board will be used to communicate 
+ * with higher command ,Control motor speed as well as power ,and perform pressure readings for ros,
+ * emergency power cut off will only be executed by the physical switch
+ *
+ *Hardware layout of the board for reference  : https://easyeda.com/editor#id=287c755b24c842f48219941e13294614
+*/
+
 #include <ros.h>
 #include <std_msgs/String.h>
 #include <std_msgs/UInt16.h>
@@ -30,8 +41,9 @@ struct MotorSpec
 
 //state variables 
 bool robotActive = false;
+bool LED_BUILTINSTATE;
 
-///=============Function declaration
+///=============Function declaration=======================================
 void motorCommandCallback(const merlion_hardware::Motor& motorVal );
 
 //ROS declarations 
@@ -60,15 +72,14 @@ ros::Subscriber<std_msgs::UInt16> robotStateSubscriber("/merlion_init/robot_stat
 std_msgs::Bool isMotorActive; 
 ros::Publisher motorActiveStatePub("/merlion_init/motor_active", &isMotorActive);
 
-
 void setup() 
 {
   Serial.begin(9600);
   rosInit();
   armAll();
   //TODO: find a way to cut off comms when mother controller is not connected
-  pinMode(LED_BUILTIN,OUTPUT);
   pressureSensorInit();
+  toggleLEDBuiltIn();
 }
 
 int i = 100;
@@ -83,6 +94,7 @@ void loop()
     motorSetSpeedAllPercentage(speedPercentage);
     delay(100);
     node_handle.spinOnce();
+    toggleLEDBuiltIn();
     return;
   }
 
@@ -182,12 +194,18 @@ void rosInit()
   node_handle.advertise(motorActiveStatePub);
   node_handle.subscribe(motor_Subscriber);
   node_handle.subscribe(robotStateSubscriber);
+  
+  //Initialise Led blinking sequance
+  pinMode(LED_BUILTIN,OUTPUT);
+  digitalWrite(LED_BUILTIN ,HIGH);
+  LED_BUILTINSTATE = true;
   delay(2000);
 }
 ///============================ROS CALLBACK CODE ===================================
 //TODO : Add ROSSERIAL CODE HERE
 void motorCommandCallback(const merlion_hardware::Motor& motorVal )
 {
+  toggleLEDBuiltIn();
   int m1 = motorVal.m1; 
   int m2 = motorVal.m2;
   int m3 = motorVal.m3;
@@ -200,6 +218,7 @@ void motorCommandCallback(const merlion_hardware::Motor& motorVal )
   motorSetSpeedFreq(motors[2],freqConversion(m3));
   motorSetSpeedFreq(motors[3],freqConversion(m4));
   motorSetSpeedFreq(motors[4], freqConversion(m5));
+  toggleLEDBuiltIn();
 }
 
 void setRobotState(const std_msgs::UInt16& robotState)
@@ -255,6 +274,24 @@ int freqConversion(int speedPercentage)
    //default code 
    Serial.print("freq :Invalid input : speedPercentage : ");Serial.println(speedPercentage);
  }
+}
+///============================HELPER CODE ==================================
+
+void toggleLEDBuiltIn()
+{
+  if(LED_BUILTINSTATE == 1)
+  {
+    digitalWrite(LED_BUILTIN,LOW );
+    LED_BUILTINSTATE = false;
+    delay(5); //TODO : REMOVE DELAYS IN INTERNAL FUNCTIONS 
+  }
+  else 
+  {
+    digitalWrite(LED_BUILTIN , HIGH);
+    LED_BUILTINSTATE = true;
+    Serial.println(LED_BUILTINSTATE);
+    delay(5);//TODO : REMOVE DELAYS IN INTERNAL FUNCTIONS 
+  }
 }
 
 ///============================TESTING CODE ==================================
