@@ -14,10 +14,10 @@ MS5837 sensor;
 
 #define MOTORSIZE 5 // Change this if this physical motor count increases
 #define M1_PIN 23
-#define M2_PIN 14
-#define M3_PIN 16
-#define M4_PIN 10
-#define M5_PIN 22
+#define M2_PIN 3
+#define M3_PIN 17
+#define M4_PIN 22
+#define M5_PIN 4
 
 
 struct MotorSpec 
@@ -60,13 +60,14 @@ ros::Subscriber<std_msgs::UInt16> robotStateSubscriber("/merlion_init/robot_stat
 std_msgs::Bool isMotorActive; 
 ros::Publisher motorActiveStatePub("/merlion_init/motor_active", &isMotorActive);
 
+
 void setup() 
 {
   Serial.begin(9600);
   rosInit();
   armAll();
   //TODO: find a way to cut off comms when mother controller is not connected
-  
+  pinMode(LED_BUILTIN,OUTPUT);
   pressureSensorInit();
 }
 
@@ -77,7 +78,7 @@ void loop()
 {
   if (!robotActive)
   {
-    i = 0;
+    i = 10;
     int speedPercentage[] = {i,i,i,i,i}; 
     motorSetSpeedAllPercentage(speedPercentage);
     delay(100);
