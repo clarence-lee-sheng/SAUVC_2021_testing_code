@@ -72,27 +72,27 @@ ros::Subscriber<std_msgs::UInt16> robotStateSubscriber("/merlion_init/robot_stat
 std_msgs::Bool isMotorActive; 
 ros::Publisher motorActiveStatePub("/merlion_init/motor_active", &isMotorActive);
 
+int i = 50;
+
 void setup() 
 {
   Serial.begin(9600);
   rosInit();
   armAll();
   //TODO: find a way to cut off comms when mother controller is not connected
-  pressureSensorInit();
+//  pressureSensorInit();/
   toggleLEDBuiltIn();
 }
 
-int i = 100;
-bool flag = true;
-
 void loop() 
 {
+
   if (!robotActive)
   {
-    i = 10;
+    i = 0;
     int speedPercentage[] = {i,i,i,i,i}; 
     motorSetSpeedAllPercentage(speedPercentage);
-    delay(100);
+    delay(2000);
     node_handle.spinOnce();
     toggleLEDBuiltIn();
     return;
@@ -100,9 +100,9 @@ void loop()
 
   sensor.read();
   pressureData.fluid_pressure = sensor.pressure() ;  
-  Serial.println(sensor.pressure());
+//  Serial.println(sensor.pressure());/
   pressurePub.publish(&pressureData);
-  sensorDepth.data = sensor.depth(); 
+  sensorDepth.data = 1; 
   depthPub.publish( &sensorDepth );
   node_handle.spinOnce();
   
@@ -212,6 +212,9 @@ void motorCommandCallback(const merlion_hardware::Motor& motorVal )
   int m4 = motorVal.m4;
   int m5 = motorVal.m5;
 
+  Serial.print("hi");
+  Serial.println(m1);
+
   /// Callback function for motor / pressure sensore return 
   motorSetSpeedFreq(motors[0],freqConversion(m1));
   motorSetSpeedFreq(motors[1],freqConversion(m2));
@@ -260,13 +263,13 @@ int freqConversion(int speedPercentage)
  if(speedPercentage >= 0)
  {
    //CW code : 
-   int freq = map(speedPercentage,0,100,generalArmingFreq,1900);
+   int freq = map(speedPercentage,0,100,generalArmingFreq,1700);
    return freq;
  }
  else if(speedPercentage <=0 )
  {
    //ACW code : 
-   int freq = map(-speedPercentage,0,100,generalArmingFreq,1100);             
+   int freq = map(-speedPercentage,0,100,generalArmingFreq,1300);             
    return freq;
  }
  else
